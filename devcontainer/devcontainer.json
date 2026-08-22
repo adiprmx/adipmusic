@@ -1,4 +1,0 @@
-{
-  "name": "Node.js Environment",
-  "postCreateCommand": "npm install"
-}
