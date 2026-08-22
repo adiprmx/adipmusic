@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Panel tersembunyi: tidak dilink dari mana pun & tidak diindeks Google -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Panel — ADIP RMX</title>
+    <link rel="icon" href="images/logo-adip.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+    <style>
+        /* ====================================================================
+           ADIP RMX — SaaS Admin Dashboard (tema Monokrom, ala Able Pro)
+           ==================================================================== */
+        :root {
+            --bg: #0a0a0d;          /* Hitam */
+            --bg-alt: #18181f;      /* Abu Metalik (card / sidebar) */
+            --card-2: #1f1f28;
+            --border: #262630;      /* Border Silver */
+            --border-soft: #303038;
+            --text: #f5f5f7;
+            --muted: #9a9aa5;
+            --muted-2: #6c6c78;
+            --silver: #c7c7d1;
+            --red: #ef4444;
+            --red-dark: #dc2626;
+            --green: #22c55e;
+            --amber: #facc15;
+            --sidebar-w: 240px;
+            --sidebar-w-collapsed: 78px;
+            --topbar-h: 66px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 4px; }
+        .hidden { display: none !important; }
+
+        /* ==================== GATE (LOGIN GOOGLE) — sebelum dashboard terbuka ==================== */
+        #authGateWrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+        .panel {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.6);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .brand img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+        .brand h1 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: .5px; }
+        .brand p { font-size: 12px; color: var(--muted); }
+        button {
+            width: 100%;
+            margin-top: 18px;
+            background: var(--red-dark);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s ease, background .2s ease;
+        }
+        button:hover { background: var(--red); transform: translateY(-1px); }
+        button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+        button.secondary { background: var(--card-2); border: 1px solid var(--border); color: var(--text); }
+        button.secondary:hover { background: var(--border); }
+        .msg { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 13px; display: none; }
+        .msg.error { display: block; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: #fca5a5; }
+        .msg.success { display: block; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.4); color: #86efac; }
+        #adminGoogleLoginBtn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #1f1f1f; }
+        #adminGoogleLoginBtn:hover { background: #eee; }
+        #adminGoogleLoginBtn i { color: #ea4335; }
+        .admin-gate-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 16px; }
+        .admin-gate-icon.guest { background: rgba(255,255,255,.06); border: 1px solid var(--border); color: var(--muted); }
+        .admin-gate-icon.denied { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: var(--red); }
+        .admin-gate-text { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 4px; line-height: 1.6; }
+
+        /* ==================== SHELL: SIDEBAR + MAIN ==================== */
+        #dashboardShell { display: none; min-height: 100vh; }
+        #dashboardShell.active { display: flex; }
+
+        .sidebar {
+            width: var(--sidebar-w);
+            flex: 0 0 var(--sidebar-w);
+            background: var(--bg-alt);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 40;
+            transition: width .2s ease, transform .25s ease;
+        }
+        .sidebar.collapsed { width: var(--sidebar-w-collapsed); }
+        .sidebar-brand {
+            height: var(--topbar-h);
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 18px;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar-brand img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); flex: 0 0 auto; }
+        .sidebar-brand span { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: .3px; }
+        .sidebar.collapsed .sidebar-brand span { display: none; }
+
+        .sidebar-nav { list-style: none; padding: 14px 10px; flex: 1 1 auto; overflow-y: auto; }
+        .sidebar-nav li + li { margin-top: 4px; }
+        .nav-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 12px;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: background .15s ease, color .15s ease;
+            border: 1px solid transparent;
+        }
+        .nav-link i { width: 18px; text-align: center; font-size: 15px; flex: 0 0 auto; color: var(--muted-2); }
+        .nav-link:hover { background: var(--card-2); color: var(--text); }
+        .nav-link.active { background: var(--card-2); color: #fff; border-color: var(--border-soft); }
+        .nav-link.active i { color: var(--silver); }
+        .sidebar.collapsed .nav-link span { display: none; }
+        .sidebar.collapsed .nav-link { justify-content: center; }
+
+        .sidebar-foot { padding: 14px; border-top: 1px solid var(--border); flex: 0 0 auto; }
+        .sidebar-foot button { margin-top: 0; }
+        .sidebar.collapsed .sidebar-foot button span { display: none; }
+
+        .sidebar-collapse-btn {
+            width: auto; margin: 0; padding: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--muted); border-radius: 8px; font-size: 12px;
+        }
+        .sidebar-collapse-btn:hover { background: var(--card-2); }
+
+        /* Overlay untuk drawer di mobile */
+        #sidebarOverlay {
+            display: none;
+            position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 35;
+        }
+        #sidebarOverlay.active { display: block; }
+
+        /* ==================== MAIN AREA ==================== */
+        #mainArea { flex: 1 1 auto; margin-left: var(--sidebar-w); min-height: 100vh; transition: margin-left .2s ease; }
+        #dashboardShell.sidebar-collapsed #mainArea { margin-left: var(--sidebar-w-collapsed); }
+
+        .topbar {
+            height: var(--topbar-h);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 22px;
+            position: sticky; top: 0; z-index: 20;
+            background: rgba(10,10,13,.85);
+            backdrop-filter: blur(10px);
+        }
+        .topbar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        #hamburgerBtn, #drawerOpenBtn {
+            width: auto; margin: 0; padding: 8px 10px;
+            background: var(--bg-alt); border: 1px solid var(--border); color: var(--text);
+            border-radius: 8px; font-size: 14px;
+        }
+        #hamburgerBtn:hover, #drawerOpenBtn:hover { background: var(--card-2); }
+        #drawerOpenBtn { display: none; }
+        .topbar-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .topbar-title small { display: block; font-family: 'Inter', sans-serif; font-size: 11px; color: var(--muted); font-weight: 500; }
+        #adminWhoBadge { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+        #adminWhoBadge img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+
+        .content { padding: 24px; max-width: 1280px; }
+        .tab-panel { display: none; animation: fadeIn .25s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none; } }
+
+        .page-heading { margin-bottom: 18px; }
+        .page-heading h2 { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .page-heading p { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+        /* ==================== METRIC CARDS ==================== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,.03), transparent 55%);
+            pointer-events: none;
+        }
+        .metric-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .metric-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--card-2); border: 1px solid var(--border-soft);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--silver); font-size: 16px;
+        }
+        .metric-label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
+        .metric-value { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: .2px; margin-top: 2px; }
+        .metric-delta { font-size: 11.5px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+        .metric-delta.up { color: #4ade80; background: rgba(34,197,94,.12); }
+        .metric-delta.down { color: #f87171; background: rgba(239,68,68,.12); }
+        .metric-delta.flat { color: var(--muted); background: rgba(255,255,255,.05); }
+
+        /* ==================== CHART CARD ==================== */
+        .chart-card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 22px;
+        }
+        .chart-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px; }
+        .chart-card-head h3 { font-family: 'Montserrat', sans-serif; font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .chart-card-head span { font-size: 11.5px; color: var(--muted); }
+        .chart-wrap { height: 280px; margin-top: 12px; }
+
+        /* ==================== CARD / GRID-2 GENERIC LAYOUT ==================== */
+        .card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        .grid-2.filter-content { grid-template-columns: 320px 1fr; }
+        h2.card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14.5px;
+            margin: 0 0 16px;
+            display: flex; align-items: center; gap: 8px;
+            color: #fff;
+        }
+        label {
+            display: block; font-size: 11.5px; font-weight: 700; color: var(--muted);
+            margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            background: var(--card-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s ease;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--silver); }
+        input[type="date"], input[type="time"] { color-scheme: dark; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .status-card { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-size: 13px; line-height: 1.9; }
+        .status-card .live { color: var(--green); font-weight: 700; }
+        .status-card .off { color: var(--muted); font-weight: 700; }
+        .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+        .tz-note {
+            margin-top: 4px; font-size: 11px; color: #fca5a5;
+            background: rgba(239,68,68,.08); border: 1px dashed rgba(239,68,68,.35);
+            border-radius: 8px; padding: 8px 10px;
+        }
+
+        /* ==================== KELOLA "TERJUAL" PER PRODUK ==================== */
+        .product-search { margin-bottom: 4px; }
+        .product-list-wrap { max-height: 520px; overflow-y: auto; margin-top: 10px; padding-right: 4px; }
+        .sold-row { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: var(--card-2); }
+        .sold-row-info { display: flex; flex-direction: column; margin-bottom: 6px; }
+        .sold-row-name { font-size: 13px; font-weight: 600; }
+        .sold-row-id { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .sold-row-current { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        .sold-row-current b { color: var(--text); }
+        .sold-row-actions { display: flex; gap: 6px; align-items: center; }
+        .btn-plus1, .btn-set { width: auto; margin: 0; padding: 8px 10px; font-size: 12px; flex: 0 0 auto; }
+        .btn-plus1 { background: var(--bg-alt); border: 1px solid var(--border); color: var(--text); }
+        .btn-plus1:hover { background: var(--border); }
+        .btn-set { background: var(--green); }
+        .btn-set:hover { background: #16a34a; }
+        .sold-manual-input { flex: 1; width: auto; margin: 0; padding: 8px 10px; font-size: 12px; }
+
+        /* ==================== MANAJEMEN TRANSAKSI ==================== */
+        #txnAdminWho { font-size: 12px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .txn-tabs { display: flex; gap: 6px; margin: 12px 0 14px; flex-wrap: wrap; }
+        .txn-tab {
+            flex: 1; background: var(--card-2); border: 1px solid var(--border); color: var(--muted);
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+            padding: 8px 6px; border-radius: 8px; cursor: pointer; text-align: center; margin: 0;
+            width: auto; transition: background .2s ease; min-width: 76px;
+        }
+        .txn-tab:hover { background: var(--border); }
+        .txn-tab.active { background: #2a2a34; color: #fff; border-color: var(--border-soft); }
+        .txn-table-wrap { max-height: 560px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+        .txn-row { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--card-2); }
+        .txn-row-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+        .txn-row-buyer { font-size: 13px; font-weight: 700; }
+        .txn-badge { font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 3px 9px; border-radius: 6px; border: 1px solid; white-space: nowrap; }
+        .txn-badge-lunas { color: #4ade80; background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.4); }
+        .txn-badge-pending { color: #facc15; background: rgba(250,204,21,.12); border-color: rgba(250,204,21,.4); }
+        .txn-row-products { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+        .txn-row-note { font-size: 12px; color: #ccc; background: rgba(255,255,255,0.05); border-left: 2px solid var(--silver); padding: 6px 10px; border-radius: 4px; margin-bottom: 6px; line-height: 1.5; }
+        .txn-row-note i { color: var(--silver); margin-right: 4px; }
+        .txn-row-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+        .txn-row-total { color: #fff; font-weight: 700; }
+        .btn-mark-paid { width: auto; margin: 0; padding: 8px 12px; font-size: 12px; background: var(--green); }
+        .btn-mark-paid:hover { background: #16a34a; }
+        .btn-mark-paid:disabled { opacity: .6; cursor: not-allowed; }
+        .txn-done-label { font-size: 11px; color: #4ade80; font-weight: 700; }
+
+        .txn-add-bar { display: flex; justify-content: flex-end; margin: 4px 0 10px; }
+        .btn-add-txn { width: auto; margin: 0; padding: 9px 14px; font-size: 12px; background: var(--green); }
+        .btn-add-txn:hover { background: #16a34a; }
+
+        /* ==================== MODALS ==================== */
+        .txn-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+        .txn-modal-overlay.hidden { display: none; }
+        .txn-modal-box { width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+        .txn-modal-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .txn-modal-close { width: auto; margin: 0; padding: 6px 10px; background: var(--card-2); border: 1px solid var(--border); font-size: 13px; }
+        .txn-modal-close:hover { background: var(--border); }
+        .txn-modal-actions { display: flex; gap: 10px; }
+        .txn-modal-actions button { margin-top: 18px; }
+        .admin-section-divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 980px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2, .grid-2.filter-content { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 860px) {
+            .sidebar { transform: translateX(-100%); width: var(--sidebar-w); }
+            .sidebar.drawer-open { transform: translateX(0); box-shadow: 0 0 40px rgba(0,0,0,.5); }
+            #mainArea, #dashboardShell.sidebar-collapsed #mainArea { margin-left: 0; }
+            #hamburgerBtn { display: none; }
+            #drawerOpenBtn { display: inline-flex; align-items: center; gap: 6px; }
+        }
+        @media (max-width: 560px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+            .content { padding: 16px; }
+            .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== GATE: BELUM LOGIN / DITOLAK ==================== -->
+    <div id="authGateWrap">
+        <!-- STATE: GUEST -->
+        <div class="panel" id="adminGuestState">
+            <div class="brand">
+                <img src="images/logo-adip.png" alt="ADIP RMX">
+                <div>
+                    <h1>ADIP RMX</h1>
+                    <p>Admin Panel — Promo, Stok &amp; Transaksi</p>
+                </div>
+            </div>
+            <div class="admin-gate-icon guest"><i class="fas fa-user-shield"></i></div>
+            <p class="admin-gate-text">
+                Panel ini khusus Administrator. Login memakai akun Google yang
+                terdaftar sebagai admin untuk membuka dashboard.
+            </p>
+            <button type="button" id="adminGoogleLoginBtn">
+                <i class="fab fa-google"></i> Login dengan Google
+            </button>
+            <div class="msg" id="adminGateMsg"></div>
+        </div>
+
+        <!-- STATE: LOGIN TAPI BUKAN ADMIN -->
+        <div class="panel hidden" id="adminDeniedState">
+            <div class="brand">
+                <img src="images/logo-adip.png" alt="ADIP RMX">
+                <div>
+                    <h1>ADIP RMX</h1>
+                    <p>Admin Panel</p>
+                </div>
+            </div>
+            <div class="admin-gate-icon denied"><i class="fas fa-ban"></i></div>
+            <div class="msg error" style="display:block; text-align:center;">
+                Akses Ditolak: Akun ini bukan Administrator
+            </div>
+            <button class="secondary" type="button" id="adminDeniedLogoutBtn">
+                <i class="fas fa-right-from-bracket"></i> Logout &amp; Coba Akun Lain
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== SHELL: SIDEBAR + MAIN CONTENT (ADMIN TERVERIFIKASI) ==================== -->
+    <div id="dashboardShell">
+        <div id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img src="images/logo-adip.png" alt="ADIP RMX">
+                <span>ADIP RMX</span>
+            </div>
+
+            <ul class="sidebar-nav" id="sidebarNav">
+                <li><a class="nav-link active" data-tab="tabDashboard"><i class="fas fa-chart-pie"></i><span>Dashboard Analytics</span></a></li>
+                <li><a class="nav-link" data-tab="tabPromo"><i class="fas fa-satellite-dish"></i><span>Promo Engine</span></a></li>
+                <li><a class="nav-link" data-tab="tabProduk"><i class="fas fa-fire"></i><span>Kelola Produk / Terjual</span></a></li>
+                <li><a class="nav-link" data-tab="tabTransaksi"><i class="fas fa-receipt"></i><span>Manajemen Transaksi</span></a></li>
+                <li><a class="nav-link" data-tab="tabUlasan"><i class="fas fa-comments"></i><span>Moderasi Ulasan</span></a></li>
+            </ul>
+
+            <div class="sidebar-foot">
+                <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseBtn" style="margin-bottom:8px; width:100%;">
+                    <i class="fas fa-angles-left"></i>
+                </button>
+                <button type="button" class="btn-add-txn" id="openManageRoleBtn" style="display:none; width:100%; margin-bottom:8px;">
+                    <i class="fas fa-user-shield"></i> <span>Kelola Admin &amp; Member</span>
+                </button>
+                <button class="secondary" id="adminLogoutBtn" type="button" style="width:100%;">
+                    <i class="fas fa-right-from-bracket"></i> <span>Keluar</span>
+                </button>
+            </div>
+        </aside>
+
+        <div id="mainArea">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button type="button" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+                    <button type="button" id="drawerOpenBtn"><i class="fas fa-bars"></i></button>
+                    <div class="topbar-title" id="topbarTitle">
+                        Dashboard Analytics
+                        <small>Promo Engine, Stok &amp; Manajemen Transaksi</small>
+                    </div>
+                </div>
+                <div id="adminWhoBadge"></div>
+            </header>
+
+            <main class="content">
+
+                <!-- ================= TAB 1: DASHBOARD ANALYTICS ================= -->
+                <section class="tab-panel active" id="tabDashboard">
+                    <div class="page-heading">
+                        <h2><i class="fas fa-chart-pie"></i> Ringkasan Performa</h2>
+                        <p>Data terintegrasi realtime dari Firebase (Orders &amp; Transactions).</p>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-top">
+                                <div>
+                                    <div class="metric-label">Total Profit</div>
+                                    <div class="metric-value" id="metricProfit">Rp 0</div>
+                                </div>
+                                <div class="metric-icon"><i class="fas fa-sack-dollar"></i></div>
+                            </div>
+                            <span class="metric-delta flat" id="metricProfitDelta">— Dari Bulan Lalu</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-top">
+                                <div>
+                                    <div class="metric-label">Total Orders</div>
+                                    <div class="metric-value" id="metricOrders">0</div>
+                                </div>
+                                <div class="metric-icon"><i class="fas fa-cart-shopping"></i></div>
+                            </div>
+                            <span class="metric-delta flat" id="metricOrdersDelta">— Dari Bulan Lalu</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-top">
+                                <div>
+                                    <div class="metric-label">Average Price</div>
+                                    <div class="metric-value" id="metricAvgPrice">Rp 0</div>
+                                </div>
+                                <div class="metric-icon"><i class="fas fa-tags"></i></div>
+                            </div>
+                            <span class="metric-delta flat" id="metricAvgPriceDelta">— Dari Bulan Lalu</span>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-top">
+                                <div>
+                                    <div class="metric-label">Products Sold</div>
+                                    <div class="metric-value" id="metricProductsSold">0</div>
+                                </div>
+                                <div class="metric-icon"><i class="fas fa-compact-disc"></i></div>
+                            </div>
+                            <span class="metric-delta flat" id="metricProductsSoldDelta">Terjual sepanjang waktu</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-head">
+                            <h3><i class="fas fa-chart-line"></i> Monthly Revenue &amp; Sales Trend</h3>
+                            <span>6 bulan terakhir · status LUNAS</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 2: PROMO ENGINE ================= -->
+                <section class="tab-panel" id="tabPromo">
+                    <div class="page-heading">
+                        <h2><i class="fas fa-satellite-dish"></i> Promo Engine</h2>
+                        <p>Jadwalkan &amp; kelola diskon otomatis untuk seluruh produk.</p>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-satellite-dish"></i> Promo Saat Ini</h2>
+                            <div class="status-card" id="promoStatus">Memuat status promo...</div>
+                            <button class="secondary" id="clearBtn" type="button">
+                                <i class="fas fa-stop"></i> Nonaktifkan Promo Sekarang
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-tags"></i> Buat / Jadwalkan Promo Baru</h2>
+                            <form id="promoForm">
+                                <label for="promoName">Nama Promo</label>
+                                <input type="text" id="promoName" placeholder="Contoh: FLASH SALE KEMERDEKAAN" required>
+
+                                <label for="discount">Diskon (%)</label>
+                                <input type="number" id="discount" min="1" max="99" step="1" placeholder="Contoh: 20" required>
+
+                                <label>Tanggal &amp; Jam Mulai</label>
+                                <div class="row">
+                                    <input type="date" id="startDate" required>
+                                    <input type="time" id="startTime" required>
+                                </div>
+
+                                <label>Tanggal &amp; Jam Selesai</label>
+                                <div class="row">
+                                    <input type="date" id="endDate" required>
+                                    <input type="time" id="endTime" required>
+                                </div>
+
+                                <div class="tz-note">
+                                    <i class="fas fa-clock"></i> Semua tanggal &amp; jam di atas dianggap
+                                    <b>WIB (UTC+7)</b> dan dibandingkan dengan <b>jam server Vercel</b> —
+                                    pengunjung tidak bisa mengakali lewat jam HP.
+                                </div>
+
+                                <button type="submit" id="saveBtn">
+                                    <i class="fas fa-rocket"></i> Simpan &amp; Aktifkan Promo
+                                </button>
+                            </form>
+                            <div class="msg" id="saveMsg"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 3: KELOLA PRODUK / TERJUAL ================= -->
+                <section class="tab-panel" id="tabProduk">
+                    <div class="page-heading">
+                        <h2><i class="fas fa-fire"></i> Kelola Angka "Terjual" per Produk</h2>
+                        <p>Setiap produk dikelola sendiri-sendiri berdasarkan ID unik.</p>
+                    </div>
+                    <div class="grid-2 filter-content">
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-magnifying-glass"></i> Cari Produk</h2>
+                            <input type="text" class="product-search" id="productSearch" placeholder="Cari produk (nama atau ID)...">
+                            <div class="hint">
+                                Mengubah 1 produk tidak akan mempengaruhi angka "Terjual" produk lain.
+                                Gunakan tombol <b>+1</b> untuk tambah cepat, atau isi angka pada kolom
+                                <b>Set</b> untuk menimpa angka secara manual.
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-list"></i> Daftar Produk</h2>
+                            <div class="product-list-wrap" id="productList">
+                                <p class="hint">Memuat daftar produk...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 4: MANAJEMEN TRANSAKSI ================= -->
+                <section class="tab-panel" id="tabTransaksi">
+                    <div class="page-heading">
+                        <h2><i class="fas fa-receipt"></i> Manajemen Transaksi</h2>
+                        <p>Gabungan order otomatis (checkout) &amp; transaksi manual admin.</p>
+                    </div>
+                    <div class="grid-2 filter-content">
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-filter"></i> Filter</h2>
+                            <input type="text" class="product-search" id="txnSearch" placeholder="Cari nama produk atau nama pembeli...">
+                            <div class="txn-tabs" id="txnTabs">
+                                <button type="button" class="txn-tab active" data-status="all">Semua</button>
+                                <button type="button" class="txn-tab" data-status="LUNAS">Lunas</button>
+                                <button type="button" class="txn-tab" data-status="PENDING">Pending</button>
+                            </div>
+                            <div class="txn-add-bar" style="justify-content:flex-start; margin-top:16px;">
+                                <button type="button" class="btn-add-txn" id="openAddTxnBtn">
+                                    <i class="fas fa-plus"></i> Tambah Transaksi
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-list-ul"></i> Daftar Transaksi</h2>
+                            <div class="txn-table-wrap" id="txnTableWrap">
+                                <p class="hint">Memuat transaksi...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 5: MODERASI ULASAN ================= -->
+                <section class="tab-panel" id="tabUlasan">
+                    <div class="page-heading">
+                        <h2><i class="fas fa-comments"></i> Moderasi Ulasan</h2>
+                        <p>Ulasan baru berstatus Pending sampai kamu Setujui. Hanya ulasan Approved yang tampil publik.</p>
+                    </div>
+                    <div class="grid-2 filter-content">
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-filter"></i> Filter Status</h2>
+                            <div class="txn-tabs" id="reviewTabs" style="flex-direction:column;">
+                                <button type="button" class="txn-tab active" data-review-status="pending">Pending</button>
+                                <button type="button" class="txn-tab" data-review-status="approved">Approved</button>
+                                <button type="button" class="txn-tab" data-review-status="rejected">Rejected</button>
+                                <button type="button" class="txn-tab" data-review-status="all">Semua</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-list-ul"></i> Daftar Ulasan</h2>
+                            <div class="txn-table-wrap" id="reviewModerationList">
+                                <p class="hint">Memuat ulasan...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: TAMBAH TRANSAKSI MANUAL (ADMIN) ==================== -->
+    <div class="txn-modal-overlay hidden" id="addTxnModal">
+        <div class="txn-modal-box">
+            <div class="txn-modal-title">
+                <span><i class="fas fa-file-invoice-dollar"></i> Tambah Transaksi</span>
+                <button type="button" class="txn-modal-close" id="closeAddTxnBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addTxnForm">
+                <label for="txnBuyerInput">Email / UID Pembeli</label>
+                <input type="text" id="txnBuyerInput" placeholder="contoh@email.com atau UID Firebase" required>
+                <div class="hint">
+                    Jika pembeli sudah pernah login &amp; terdaftar di /users, sistem akan
+                    otomatis mencocokkan UID-nya berdasarkan email agar transaksi tampil
+                    di riwayat akun tersebut. Kalau tidak ditemukan, teks ini disimpan
+                    apa adanya sebagai identitas pembeli.
+                </div>
+
+                <label for="txnProductSelect">Pilih Produk</label>
+                <select id="txnProductSelect" required>
+                    <option value="">— Pilih produk —</option>
+                </select>
+
+                <label for="txnNote">Catatan Pembeli</label>
+                <textarea id="txnNote" placeholder="Catatan tambahan dari pembeli (opsional)"></textarea>
+
+                <label for="txnStatusSelect">Status</label>
+                <select id="txnStatusSelect" required>
+                    <option value="PENDING">PENDING</option>
+                    <option value="LUNAS">LUNAS</option>
+                </select>
+
+                <label for="txnDateInput">Tanggal</label>
+                <input type="date" id="txnDateInput" required>
+
+                <div class="txn-modal-actions">
+                    <button type="button" class="secondary" id="cancelAddTxnBtn">Batal</button>
+                    <button type="submit" id="submitAddTxnBtn">
+                        <i class="fas fa-check"></i> Simpan Transaksi
+                    </button>
+                </div>
+                <div class="msg" id="addTxnMsg"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: KELOLA ADMIN & MEMBER (ROLE USER) ==================== -->
+    <div class="txn-modal-overlay hidden" id="manageRoleModal">
+        <div class="txn-modal-box">
+            <div class="txn-modal-title">
+                <span><i class="fas fa-user-shield"></i> Kelola Admin &amp; Member</span>
+                <button type="button" class="txn-modal-close" id="closeManageRoleBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="manageRoleForm">
+                <label for="roleUserInput">Email / UID User</label>
+                <input type="text" id="roleUserInput" placeholder="contoh@email.com atau UID Firebase" required>
+                <div class="hint">
+                    User yang ingin diatur role-nya harus sudah pernah Login/Register
+                    minimal 1x (supaya nodenya sudah ada di <code>/users</code>). Kalau
+                    input berupa email, sistem otomatis mencari UID yang cocok.
+                </div>
+
+                <label for="roleSelect">Role</label>
+                <select id="roleSelect" required>
+                    <option value="MEMBER">MEMBER</option>
+                    <option value="ADMINISTRATOR">ADMINISTRATOR</option>
+                </select>
+
+                <div class="txn-modal-actions">
+                    <button type="button" class="secondary" id="cancelManageRoleBtn">Batal</button>
+                    <button type="submit" id="submitManageRoleBtn">
+                        <i class="fas fa-save"></i> Simpan Role
+                    </button>
+                </div>
+                <div class="msg" id="manageRoleMsg"></div>
+            </form>
+        </div>
+    </div>
+
+<!-- Sumber daftar produk (ID, nama, kategori) -->
+<script src="js/data.js"></script>
+
+<!-- Firebase SDK (Auth & Realtime Database) + Engine Sync -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="js/auth-engine.js"></script>
+
+<!-- Guard Admin (Login Google tunggal) + Manajemen Transaksi -->
+<script src="js/admin.js"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ========================================================================
+       SHELL: GATE <-> DASHBOARD SWITCH
+       js/admin.js masih mengontrol elemen lama (adminGuestState,
+       adminDeniedState, adminPanelState) lewat showState(). Elemen
+       #adminPanelState sekarang TIDAK ADA di markup baru ini (diganti
+       #dashboardShell), jadi kita observe class "hidden" pada
+       adminGuestState/adminDeniedState untuk tahu kapan admin terverifikasi,
+       lalu buka #dashboardShell secara manual di sini tanpa mengubah logic
+       auth di js/admin.js sama sekali.
+       ======================================================================== */
+    var authGateWrap    = document.getElementById('authGateWrap');
+    var dashboardShell  = document.getElementById('dashboardShell');
+    var adminGuestState = document.getElementById('adminGuestState');
+    var adminDeniedState = document.getElementById('adminDeniedState');
+
+    function syncShellVisibility() {
+        var guestHidden  = adminGuestState.classList.contains('hidden');
+        var deniedHidden = adminDeniedState.classList.contains('hidden');
+        // Kalau kedua panel gate disembunyikan oleh admin.js -> berarti
+        // showState(adminPanelState) dipanggil -> admin terverifikasi.
+        if (guestHidden && deniedHidden) {
+            authGateWrap.classList.add('hidden');
+            dashboardShell.classList.add('active');
+        } else {
+            authGateWrap.classList.remove('hidden');
+            dashboardShell.classList.remove('active');
+        }
+    }
+
+    new MutationObserver(syncShellVisibility).observe(adminGuestState, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(syncShellVisibility).observe(adminDeniedState, { attributes: true, attributeFilter: ['class'] });
+    syncShellVisibility();
+
+    /* ========================================================================
+       SIDEBAR: collapse (desktop) + drawer (mobile)
+       ======================================================================== */
+    var sidebar = document.getElementById('sidebar');
+    var sidebarOverlay = document.getElementById('sidebarOverlay');
+    var hamburgerBtn = document.getElementById('hamburgerBtn');
+    var drawerOpenBtn = document.getElementById('drawerOpenBtn');
+    var collapseBtn = document.getElementById('sidebarCollapseBtn');
+
+    hamburgerBtn.addEventListener('click', function () {
+        sidebar.classList.toggle('collapsed');
+        dashboardShell.classList.toggle('sidebar-collapsed');
+    });
+    collapseBtn.addEventListener('click', function () {
+        sidebar.classList.toggle('collapsed');
+        dashboardShell.classList.toggle('sidebar-collapsed');
+    });
+    drawerOpenBtn.addEventListener('click', function () {
+        sidebar.classList.add('drawer-open');
+        sidebarOverlay.classList.add('active');
+    });
+    sidebarOverlay.addEventListener('click', function () {
+        sidebar.classList.remove('drawer-open');
+        sidebarOverlay.classList.remove('active');
+    });
+
+    /* ========================================================================
+       TAB NAVIGATION (Sidebar -> Tab Panel, tanpa reload halaman)
+       ======================================================================== */
+    var navLinks = document.querySelectorAll('.nav-link');
+    var topbarTitle = document.getElementById('topbarTitle');
+    var TAB_META = {
+        tabDashboard: { title: 'Dashboard Analytics', sub: 'Ringkasan profit, order & tren penjualan' },
+        tabPromo:     { title: 'Promo Engine', sub: 'Jadwalkan & kelola diskon otomatis' },
+        tabProduk:    { title: 'Kelola Produk / Terjual', sub: 'Atur angka terjual per produk' },
+        tabTransaksi: { title: 'Manajemen Transaksi', sub: 'Order otomatis & input manual' },
+        tabUlasan:    { title: 'Moderasi Ulasan', sub: 'Setujui / tolak ulasan pengunjung' }
+    };
+
+    navLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+            var targetId = link.getAttribute('data-tab');
+
+            navLinks.forEach(function (l) { l.classList.remove('active'); });
+            link.classList.add('active');
+
+            document.querySelectorAll('.tab-panel').forEach(function (panel) {
+                panel.classList.toggle('active', panel.id === targetId);
+            });
+
+            var meta = TAB_META[targetId];
+            if (meta) {
+                topbarTitle.innerHTML = meta.title + '<small>' + meta.sub + '</small>';
+            }
+
+            // Tutup drawer di mobile setelah pindah tab
+            sidebar.classList.remove('drawer-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    });
+
+    /* ========================================================================
+       METRICS CARDS + REVENUE CHART
+       Data didengar dari CustomEvent 'adiprmx:stats-update' yang di-broadcast
+       oleh js/admin.js (fungsi broadcastStats(), dipanggil setiap kali data
+       /orders atau /transactions berubah realtime). Produk terjual diambil
+       dari loadSoldCounts() di bawah (fetch /products.json).
+       ======================================================================== */
+    var metricProfit = document.getElementById('metricProfit');
+    var metricProfitDelta = document.getElementById('metricProfitDelta');
+    var metricOrders = document.getElementById('metricOrders');
+    var metricOrdersDelta = document.getElementById('metricOrdersDelta');
+    var metricAvgPrice = document.getElementById('metricAvgPrice');
+    var metricAvgPriceDelta = document.getElementById('metricAvgPriceDelta');
+    var metricProductsSold = document.getElementById('metricProductsSold');
+
+    function formatRp(n) { return 'Rp ' + Math.round(n || 0).toLocaleString('id-ID'); }
+
+    function applyDelta(el, pct) {
+        el.classList.remove('up', 'down', 'flat');
+        if (pct === null || !isFinite(pct)) {
+            el.classList.add('flat');
+            el.innerHTML = '— Dari Bulan Lalu';
+            return;
+        }
+        var rounded = Math.round(pct);
+        if (rounded > 0) {
+            el.classList.add('up');
+            el.innerHTML = '<i class="fas fa-arrow-trend-up"></i> +' + rounded + '% Dari Bulan Lalu';
+        } else if (rounded < 0) {
+            el.classList.add('down');
+            el.innerHTML = '<i class="fas fa-arrow-trend-down"></i> ' + rounded + '% Dari Bulan Lalu';
+        } else {
+            el.classList.add('flat');
+            el.innerHTML = '0% Dari Bulan Lalu';
+        }
+    }
+
+    function last6MonthKeys() {
+        var keys = [];
+        var d = new Date();
+        d.setDate(1);
+        for (var i = 5; i >= 0; i--) {
+            var dd = new Date(d.getFullYear(), d.getMonth() - i, 1);
+            keys.push(dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0'));
+        }
+        return keys;
+    }
+    function monthLabel(key) {
+        var parts = key.split('-');
+        var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+        return d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+    }
+
+    var revenueChart = null;
+    function renderRevenueChart(monthly) {
+        var keys = last6MonthKeys();
+        var labels = keys.map(monthLabel);
+        var values = keys.map(function (k) { return monthly[k] || 0; });
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+
+        var gradient = ctx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(199,199,209,.35)');
+        gradient.addColorStop(1, 'rgba(199,199,209,0)');
+
+        if (revenueChart) {
+            revenueChart.data.labels = labels;
+            revenueChart.data.datasets[0].data = values;
+            revenueChart.update();
+            return;
+        }
+
+        revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: values,
+                    borderColor: '#e6e6ec',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0a0a0d',
+                    pointBorderColor: '#e6e6ec',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 5,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#18181f',
+                        borderColor: '#262630',
+                        borderWidth: 1,
+                        titleColor: '#f5f5f7',
+                        bodyColor: '#c7c7d1',
+                        padding: 10,
+                        callbacks: {
+                            label: function (item) { return formatRp(item.parsed.y); }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,.05)' },
+                        ticks: { color: '#9a9aa5', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,.05)' },
+                        ticks: {
+                            color: '#9a9aa5',
+                            font: { size: 11 },
+                            callback: function (v) { return 'Rp ' + (v >= 1000000 ? (v / 1000000) + 'jt' : v.toLocaleString('id-ID')); }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    window.addEventListener('adiprmx:stats-update', function (e) {
+        var d = e.detail || {};
+        metricProfit.textContent = formatRp(d.totalProfit);
+        metricOrders.textContent = (d.totalOrders || 0).toLocaleString('id-ID');
+        metricAvgPrice.textContent = formatRp(d.avgPrice);
+
+        var keys = last6MonthKeys();
+        var curKey = keys[keys.length - 1];
+        var prevKey = keys[keys.length - 2];
+        var monthly = d.monthly || {};
+        var monthlyCount = d.monthlyCount || {};
+
+        var curRev = monthly[curKey] || 0, prevRev = monthly[prevKey] || 0;
+        applyDelta(metricProfitDelta, prevRev ? ((curRev - prevRev) / prevRev * 100) : (curRev ? 100 : null));
+        applyDelta(metricAvgPriceDelta, prevRev ? ((curRev - prevRev) / prevRev * 100) : (curRev ? 100 : null));
+
+        var curCnt = monthlyCount[curKey] || 0, prevCnt = monthlyCount[prevKey] || 0;
+        applyDelta(metricOrdersDelta, prevCnt ? ((curCnt - prevCnt) / prevCnt * 100) : (curCnt ? 100 : null));
+
+        renderRevenueChart(monthly);
+    });
+
+    /* ========================================================================
+       WAJIB SAMA dengan yang ada di js/promo-engine.js
+       ======================================================================== */
+    var FIREBASE_DB_URL = 'https://adip-promo-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+    var promoForm  = document.getElementById('promoForm');
+    var saveMsg    = document.getElementById('saveMsg');
+    var statusCard = document.getElementById('promoStatus');
+
+    function showMsg(el, text, ok) {
+        el.textContent = text;
+        el.className = 'msg ' + (ok ? 'success' : 'error');
+    }
+
+    // Setiap request ke API memakai Firebase ID Token milik akun Google admin
+    // yang sedang login — diverifikasi ulang di server (lihat api/save-promo.js
+    // & api/update-sold.js).
+    function getIdToken() {
+        var user = firebase.auth().currentUser;
+        if (!user) return Promise.reject(new Error('Belum login.'));
+        return user.getIdToken();
+    }
+
+    // Dipanggil oleh js/admin.js (event "adiprmx:admin-verified") begitu akun
+    // Google yang login terkonfirmasi sebagai admin.
+    window.initAdminDashboard = function () {
+        loadStatus();
+        renderProductList('');
+        loadSoldCounts();
+    };
+
+    /* ---------------- STATUS PROMO (baca publik dari Firebase) ---------------- */
+    function loadStatus() {
+        fetch(FIREBASE_DB_URL.replace(/\/+$/, '') + '/promo.json', { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (p) {
+                if (!p) {
+                    statusCard.innerHTML = '<span class="off">TIDAK ADA PROMO</span> — semua harga normal.';
+                    return;
+                }
+                var now = Date.now();
+                var s = new Date(p.start).getTime();
+                var e2 = new Date(p.end).getTime();
+                var state = (now >= s && now <= e2)
+                    ? '<span class="live">SEDANG AKTIF</span>'
+                    : (now < s ? '<span class="off">TERJADWAL</span>' : '<span class="off">BERAKHIR</span>');
+                statusCard.innerHTML =
+                    state + '<br>' +
+                    '<b>' + (p.name || '-') + '</b> — Diskon <b>' + p.discount + '%</b><br>' +
+                    'Mulai&nbsp;&nbsp;: ' + new Date(p.start).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB<br>' +
+                    'Selesai: ' + new Date(p.end).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB';
+            })
+            .catch(function () {
+                statusCard.innerHTML = '<span class="off">Gagal membaca status promo.</span>';
+            });
+    }
+
+    /* ---------------- SIMPAN PROMO ---------------- */
+    promoForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+
+        // Rakit ISO string dengan offset WIB (UTC+7) secara eksplisit,
+        // sehingga benar walau laptop/HP admin sedang tidak di zona WIB.
+        var start = document.getElementById('startDate').value + 'T' + document.getElementById('startTime').value + ':00+07:00';
+        var end   = document.getElementById('endDate').value   + 'T' + document.getElementById('endTime').value   + ':00+07:00';
+
+        var promoPayload = {
+            name: document.getElementById('promoName').value.trim(),
+            discount: parseInt(document.getElementById('discount').value, 10),
+            start: start,
+            end: end
+        };
+
+        getIdToken()
+            .then(function (idToken) {
+                return fetch('/api/save-promo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: idToken, promo: promoPayload })
+                });
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    showMsg(saveMsg, data.message || 'Promo tersimpan!', true);
+                    loadStatus();
+                } else {
+                    showMsg(saveMsg, data.message || 'Gagal menyimpan promo.', false);
+                }
+            })
+            .catch(function () {
+                showMsg(saveMsg, 'Gagal menghubungi server. Coba lagi.', false);
+            })
+            .finally(function () { btn.disabled = false; });
+    });
+
+    /* ---------------- NONAKTIFKAN PROMO ---------------- */
+    document.getElementById('clearBtn').addEventListener('click', function () {
+        if (!confirm('Nonaktifkan promo? Semua harga langsung kembali normal.')) return;
+        getIdToken()
+            .then(function (idToken) {
+                return fetch('/api/save-promo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: idToken, clear: true })
+                });
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                showMsg(saveMsg, data.message || '', !!data.success);
+                loadStatus();
+            })
+            .catch(function () {
+                showMsg(saveMsg, 'Gagal menghubungi server.', false);
+            });
+    });
+
+    /* ========================================================================
+       KELOLA ANGKA "TERJUAL" PER PRODUK
+       Setiap baris = 1 productId unik. Tombol (+1) & input "Set" HANYA
+       menulis ke /products/{productId}/sold_count milik produk itu sendiri
+       (lihat api/update-sold.js) — produk lain tidak pernah tersentuh.
+       ======================================================================== */
+    var productSearch  = document.getElementById('productSearch');
+    var productListEl  = document.getElementById('productList');
+
+    // Gabungkan FLM Project + Sample Pack dari js/data.js jadi 1 daftar
+    var allProducts = []
+        .concat(typeof flmProducts !== 'undefined' ? flmProducts : [])
+        .concat(typeof samplePackProducts !== 'undefined' ? samplePackProducts : []);
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+    }
+
+    function renderProductList(filterText) {
+        if (!productListEl) return;
+        var q = (filterText || '').toLowerCase().trim();
+        var list = allProducts.filter(function (p) {
+            return !q ||
+                p.name.toLowerCase().indexOf(q) !== -1 ||
+                p.id.toLowerCase().indexOf(q) !== -1;
+        });
+
+        if (!list.length) {
+            productListEl.innerHTML = '<p class="hint">Produk tidak ditemukan.</p>';
+            return;
+        }
+
+        productListEl.innerHTML = list.map(function (p) {
+            var pid = escapeHtml(p.id);
+            return '' +
+                '<div class="sold-row">' +
+                    '<div class="sold-row-info">' +
+                        '<span class="sold-row-name">' + escapeHtml(p.name) + '</span>' +
+                        '<span class="sold-row-id">' + pid + ' &middot; ' + escapeHtml(p.category) + '</span>' +
+                    '</div>' +
+                    '<div class="sold-row-current">Terjual saat ini: <b id="cur-' + pid + '">…</b></div>' +
+                    '<div class="sold-row-actions">' +
+                        '<button type="button" class="btn-plus1" data-pid="' + pid + '" title="Tambah 1">' +
+                            '<i class="fas fa-plus"></i> 1' +
+                        '</button>' +
+                        '<input type="number" min="0" step="1" class="sold-manual-input" ' +
+                               'id="input-' + pid + '" placeholder="Set angka">' +
+                        '<button type="button" class="btn-set" data-pid="' + pid + '" title="Set angka manual">' +
+                            '<i class="fas fa-check"></i> Set' +
+                        '</button>' +
+                    '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    // Baca angka "Terjual" TERKINI untuk semua produk (read publik dari Firebase,
+    // sama seperti loadStatus() di atas — tidak perlu token). Sekaligus jumlahkan
+    // totalnya untuk metric card "Products Sold" di tab Dashboard Analytics.
+    function loadSoldCounts() {
+        if (!FIREBASE_DB_URL) return;
+        fetch(FIREBASE_DB_URL.replace(/\/+$/, '') + '/products.json', { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                data = data || {};
+                var totalSold = 0;
+                allProducts.forEach(function (p) {
+                    var el = document.getElementById('cur-' + p.id);
+                    var entry = data[p.id];
+                    var count = entry && entry.sold_count !== undefined ? entry.sold_count : 0;
+                    totalSold += (parseInt(count, 10) || 0);
+                    if (el) el.textContent = count;
+                });
+                if (metricProductsSold) metricProductsSold.textContent = totalSold.toLocaleString('id-ID');
+            })
+            .catch(function () {
+                allProducts.forEach(function (p) {
+                    var el = document.getElementById('cur-' + p.id);
+                    if (el) el.textContent = '-';
+                });
+            });
+    }
+
+    // Kirim perubahan (increment / set) HANYA untuk 1 productId
+    function updateSoldCount(productId, extra, btnEl) {
+        if (btnEl) btnEl.disabled = true;
+
+        getIdToken()
+            .then(function (idToken) {
+                var payload = { idToken: idToken, productId: productId };
+                for (var k in extra) payload[k] = extra[k];
+
+                return fetch('/api/update-sold', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    var el = document.getElementById('cur-' + productId);
+                    if (el && data.sold_count !== undefined && data.sold_count !== null) {
+                        el.textContent = data.sold_count;
+                    }
+                    var inputEl = document.getElementById('input-' + productId);
+                    if (inputEl) inputEl.value = '';
+                    loadSoldCounts();
+                } else {
+                    alert(data.message || 'Gagal menyimpan perubahan.');
+                }
+            })
+            .catch(function () {
+                alert('Gagal menghubungi server. Coba lagi.');
+            })
+            .finally(function () {
+                if (btnEl) btnEl.disabled = false;
+            });
+    }
+
+    if (productListEl) {
+        productListEl.addEventListener('click', function (e) {
+            var plusBtn = e.target.closest('.btn-plus1');
+            var setBtn  = e.target.closest('.btn-set');
+
+            if (plusBtn) {
+                var pid1 = plusBtn.getAttribute('data-pid');
+                updateSoldCount(pid1, { mode: 'increment' }, plusBtn);
+                return;
+            }
+
+            if (setBtn) {
+                var pid2 = setBtn.getAttribute('data-pid');
+                var inputEl = document.getElementById('input-' + pid2);
+                var val = parseInt(inputEl && inputEl.value, 10);
+                if (isNaN(val) || val < 0) {
+                    alert('Masukkan angka valid (bilangan bulat, minimal 0).');
+                    return;
+                }
+                updateSoldCount(pid2, { mode: 'set', value: val }, setBtn);
+            }
+        });
+    }
+
+    if (productSearch) {
+        productSearch.addEventListener('input', function () {
+            renderProductList(productSearch.value);
+            loadSoldCounts();
+        });
+    }
+})();
+</script>
+
+<!-- Panel Moderasi Ulasan (Supabase) -->
+<script src="js/reviews-config.js"></script>
+<script src="js/reviews-admin.js"></script>
+</body>
+</html>
