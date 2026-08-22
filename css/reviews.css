@@ -1,0 +1,1106 @@
+/* ========================================================================
+   ADIP RMX — Sistem Ulasan Interaktif
+   MONOKROM ADIP RMX THEME (Hitam #0d0d10, Abu #1a1a1e, Putih #fff)
+   Semua rule dibungkus dalam selector #testimoni supaya menimpa (override)
+   style lama 100% tanpa bentrok dengan komponen lain di web.
+   ======================================================================== */
+
+#testimoni {
+    --rv-black: #0d0d10;
+    --rv-gray: #1a1a1e;
+    --rv-gray-soft: #121216;
+    --rv-white: #ffffff;
+    --rv-white-soft: rgba(255, 255, 255, 0.7);
+    --rv-white-dim: rgba(255, 255, 255, 0.4);
+    --rv-border: rgba(255, 255, 255, 0.1);
+    --rv-border-strong: rgba(255, 255, 255, 0.28);
+    --rv-glow: rgba(255, 255, 255, 0.35);
+}
+
+#testimoni .reviews-app {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+#testimoni .glass-card {
+    background: var(--rv-black);
+    border: 1px solid var(--rv-border);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Write / Form (moved to top) ---------- */
+#testimoni .reviews-write {
+    position: relative;
+    padding: 28px;
+    overflow: hidden;
+}
+
+#testimoni .rv-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 18px;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+
+#testimoni .rv-eq span {
+    display: block;
+    width: 3px;
+    background: var(--rv-white);
+    border-radius: 2px;
+    animation: rv-eq-bounce 1.2s ease-in-out infinite;
+}
+
+#testimoni .rv-eq span:nth-child(1) { height: 40%; animation-delay: 0s; }
+#testimoni .rv-eq span:nth-child(2) { height: 80%; animation-delay: 0.1s; }
+#testimoni .rv-eq span:nth-child(3) { height: 55%; animation-delay: 0.2s; }
+#testimoni .rv-eq span:nth-child(4) { height: 100%; animation-delay: 0.3s; }
+#testimoni .rv-eq span:nth-child(5) { height: 65%; animation-delay: 0.4s; }
+#testimoni .rv-eq span:nth-child(6) { height: 30%; animation-delay: 0.5s; }
+#testimoni .rv-eq span:nth-child(7) { height: 75%; animation-delay: 0.6s; }
+#testimoni .rv-eq span:nth-child(8) { height: 45%; animation-delay: 0.7s; }
+
+@keyframes rv-eq-bounce {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ---------- Audio Equalizer SVG (pojok kanan atas form, aktif saat mengetik) ---------- */
+#testimoni .rv-eq-svg {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    width: 52px;
+    height: 24px;
+    opacity: 0.28;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#testimoni .rv-eq-svg .rv-eq-bar {
+    fill: var(--rv-white);
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rv-eq-svg-idle 2.6s ease-in-out infinite;
+}
+
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(1) { animation-delay: 0s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(2) { animation-delay: 0.15s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(3) { animation-delay: 0.3s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(4) { animation-delay: 0.45s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(5) { animation-delay: 0.6s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(6) { animation-delay: 0.75s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(7) { animation-delay: 0.9s; }
+#testimoni .rv-eq-svg .rv-eq-bar:nth-child(8) { animation-delay: 1.05s; }
+
+@keyframes rv-eq-svg-idle {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(0.7); }
+}
+
+/* Aktif: bar bergerak lebih hidup saat user mulai mengetik pesan */
+#testimoni .rv-eq-svg.rv-eq-active {
+    opacity: 0.9;
+}
+
+#testimoni .rv-eq-svg.rv-eq-active .rv-eq-bar {
+    animation-name: rv-eq-svg-active;
+    animation-duration: 0.55s;
+}
+
+@keyframes rv-eq-svg-active {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1.15); }
+}
+
+#testimoni .reviews-write h3 {
+    color: var(--rv-white);
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.02em;
+}
+
+#testimoni .rv-write-note {
+    color: var(--rv-white-dim);
+    font-size: 0.82rem;
+    margin-bottom: 18px;
+}
+
+#testimoni .rv-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+#testimoni .rv-star-input {
+    display: flex;
+    gap: 6px;
+    font-size: 1.4rem;
+    color: var(--rv-white-dim);
+}
+
+#testimoni .rv-star-input i {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+    overflow: visible;
+}
+
+/* Efek haptic visual: ripple halus melingkar saat bintang diklik */
+#testimoni .rv-star-ripple {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--rv-white);
+    pointer-events: none;
+    animation: rv-star-ripple-anim 0.5s ease-out forwards;
+}
+
+@keyframes rv-star-ripple-anim {
+    0% { width: 6px; height: 6px; margin: -3px 0 0 -3px; opacity: 0.9; border-width: 1.5px; }
+    100% { width: 34px; height: 34px; margin: -17px 0 0 -17px; opacity: 0; border-width: 0.5px; }
+}
+
+#testimoni .rv-star-input i.fas {
+    color: var(--rv-white);
+    text-shadow: 0 0 10px var(--rv-glow);
+}
+
+#testimoni .rv-star-input i:hover {
+    transform: scale(1.15);
+}
+
+@keyframes rv-star-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+#testimoni .rv-star-pop {
+    animation: rv-star-pop 0.3s ease;
+}
+
+#testimoni .rv-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+#testimoni .rv-form input[type="text"],
+#testimoni .rv-form textarea {
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--rv-white);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+}
+
+#testimoni .rv-form input[type="text"]::placeholder,
+#testimoni .rv-form textarea::placeholder {
+    color: var(--rv-white-dim);
+}
+
+#testimoni .rv-form input[type="text"]:focus,
+#testimoni .rv-form textarea:focus,
+#testimoni .rv-form input[type="text"].rv-typing,
+#testimoni .rv-form textarea.rv-typing {
+    border-color: var(--rv-white-border, #fff);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08), 0 0 14px var(--rv-glow);
+}
+
+#testimoni .rv-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+#testimoni .rv-upload-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+#testimoni .rv-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    color: var(--rv-white-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+#testimoni .rv-upload-btn:hover {
+    border-color: var(--rv-border-strong);
+    color: var(--rv-white);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.12);
+}
+
+#testimoni .rv-upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#testimoni .rv-upload-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rv-gray-soft);
+    border: 1px solid var(--rv-border);
+    color: var(--rv-white-soft);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+}
+
+#testimoni .rv-upload-chip a {
+    color: var(--rv-white-dim);
+    text-decoration: none;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+#testimoni .rv-upload-chip a:hover {
+    color: var(--rv-white);
+}
+
+#testimoni .rv-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+#testimoni .rv-form-msg {
+    font-size: 0.82rem;
+    color: var(--rv-white-dim);
+    margin-right: auto;
+}
+
+#testimoni .rv-form-msg.success { color: var(--rv-white); }
+#testimoni .rv-form-msg.error { color: #ff5c5c; }
+
+/* Compact submit button, aligned bottom-right, monochrome */
+#testimoni .rv-submit-btn {
+    position: relative;
+    overflow: hidden;
+    align-self: flex-end;
+    padding: 8px 20px;
+    border-radius: 6px;
+    background: var(--rv-white);
+    color: #000;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#testimoni .rv-submit-btn:hover {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.55);
+    transform: translateY(-1px);
+}
+
+#testimoni .rv-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#testimoni .rv-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.25);
+    transform: scale(0);
+    animation: rv-ripple-anim 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rv-ripple-anim {
+    to { transform: scale(1); opacity: 0; }
+}
+
+/* ---------- Filters: Segmented Control Bar Monokrom (Flat, No Capsule) ---------- */
+#testimoni .reviews-filters-wrap {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+#testimoni .reviews-filters-wrap::-webkit-scrollbar {
+    display: none;
+}
+
+#testimoni .reviews-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    background: #111115;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid #22222a;
+    width: max-content;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+    #testimoni .reviews-filters {
+        justify-content: center;
+    }
+}
+
+#testimoni .rv-filter-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--rv-white-dim);
+    font-size: 0.82rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+#testimoni .rv-filter-btn:hover {
+    color: var(--rv-white);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #33333d;
+}
+
+#testimoni .rv-filter-btn.active {
+    background: #ffffff;
+    color: #000000;
+    font-weight: 700;
+    border-color: #ffffff;
+    box-shadow: none;
+}
+
+#testimoni .rv-filter-btn.active:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* ---------- List / Grid ---------- */
+#testimoni .reviews-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+#testimoni .rv-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--rv-white-dim);
+    padding: 40px 0;
+}
+
+/* ---------- Skeleton Loader Shimmer Monokrom ---------- */
+#testimoni .rv-skeleton-wrap {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+#testimoni .rv-skeleton-card {
+    background: var(--rv-gray-soft);
+    border: 1px solid var(--rv-border);
+    border-left: 3px solid var(--rv-border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#testimoni .rv-skeleton-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#testimoni .rv-skeleton-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+#testimoni .rv-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+}
+
+#testimoni .rv-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    animation: rv-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes rv-shimmer {
+    100% { transform: translateX(100%); }
+}
+
+#testimoni .rv-skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+#testimoni .rv-skeleton-line {
+    height: 12px;
+    width: 100%;
+}
+
+#testimoni .rv-skeleton-line-sm { width: 55%; height: 11px; }
+#testimoni .rv-skeleton-line-xs { width: 35%; height: 9px; }
+#testimoni .rv-skeleton-line-w80 { width: 80%; }
+#testimoni .rv-skeleton-line-w60 { width: 60%; }
+
+/* ---------- Empty State ala Interface Audio Plugin ---------- */
+#testimoni .rv-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 56px 20px;
+    background: var(--rv-gray-soft);
+    border: 1px dashed var(--rv-border);
+    border-radius: 12px;
+}
+
+#testimoni .rv-empty-waveform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    margin-bottom: 14px;
+    opacity: 0.5;
+}
+
+#testimoni .rv-empty-waveform span {
+    width: 4px;
+    height: 40%;
+    background: var(--rv-white-dim);
+    border-radius: 2px;
+    animation: rv-empty-wave 1.8s ease-in-out infinite;
+}
+
+#testimoni .rv-empty-waveform span:nth-child(1) { height: 30%; animation-delay: 0s; }
+#testimoni .rv-empty-waveform span:nth-child(2) { height: 60%; animation-delay: 0.1s; }
+#testimoni .rv-empty-waveform span:nth-child(3) { height: 40%; animation-delay: 0.2s; }
+#testimoni .rv-empty-waveform span:nth-child(4) { height: 80%; animation-delay: 0.3s; }
+#testimoni .rv-empty-waveform span:nth-child(5) { height: 50%; animation-delay: 0.4s; }
+#testimoni .rv-empty-waveform span:nth-child(6) { height: 70%; animation-delay: 0.5s; }
+#testimoni .rv-empty-waveform span:nth-child(7) { height: 35%; animation-delay: 0.6s; }
+#testimoni .rv-empty-waveform span:nth-child(8) { height: 55%; animation-delay: 0.7s; }
+#testimoni .rv-empty-waveform span:nth-child(9) { height: 30%; animation-delay: 0.8s; }
+#testimoni .rv-empty-waveform span:nth-child(10) { height: 45%; animation-delay: 0.9s; }
+
+@keyframes rv-empty-wave {
+    0%, 100% { transform: scaleY(0.5); opacity: 0.4; }
+    50% { transform: scaleY(1); opacity: 0.9; }
+}
+
+#testimoni .rv-empty-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--rv-white-soft);
+    margin-bottom: 14px;
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+#testimoni .rv-empty-title {
+    color: var(--rv-white);
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+#testimoni .rv-empty-sub {
+    color: var(--rv-white-dim);
+    font-size: 0.82rem;
+    max-width: 320px;
+}
+
+/* ---------- Card: Audio Track Listing (DAW style) ---------- */
+#testimoni .rv-card {
+    background: var(--rv-gray-soft);
+    border: 1px solid var(--rv-border);
+    border-left: 3px solid var(--rv-white-dim);
+    border-radius: 8px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+#testimoni .rv-card:hover {
+    border-left-color: var(--rv-white);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Transisi fade-in + slide-up saat ulasan baru masuk realtime */
+#testimoni .rv-card.rv-card-enter {
+    animation: rv-card-enter-anim 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes rv-card-enter-anim {
+    0% {
+        opacity: 0;
+        transform: translateY(22px) scale(0.98);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+    60% {
+        opacity: 1;
+        box-shadow: 0 0 22px rgba(255, 255, 255, 0.18);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+    }
+}
+
+#testimoni .rv-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+#testimoni .rv-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    color: var(--rv-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+#testimoni .rv-avatar-sm {
+    width: 30px;
+    height: 30px;
+    font-size: 0.72rem;
+    border-radius: 5px;
+}
+
+#testimoni .rv-card-headinfo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+#testimoni .rv-name {
+    color: var(--rv-white);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+#testimoni .rv-badge-verified {
+    color: var(--rv-white);
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border-strong);
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+/* Bintang silver/putih ala track meter */
+#testimoni .rv-stars {
+    color: var(--rv-white-dim);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+#testimoni .rv-stars .fas {
+    color: var(--rv-white);
+    text-shadow: 0 0 8px var(--rv-glow);
+}
+
+#testimoni .rv-date {
+    margin-left: auto;
+    color: var(--rv-white-dim);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+#testimoni .rv-product-tag {
+    align-self: flex-start;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    color: var(--rv-white-soft);
+    font-size: 0.68rem;
+    padding: 2px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#testimoni .rv-text {
+    color: var(--rv-white-soft);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#testimoni .rv-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+}
+
+#testimoni .rv-media-image img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--rv-border);
+    cursor: pointer;
+    filter: grayscale(15%);
+    transition: filter 0.2s ease, border-color 0.2s ease;
+}
+
+#testimoni .rv-media-image img:hover {
+    filter: grayscale(0%);
+    border-color: var(--rv-border-strong);
+}
+
+/* ---------- Audio Player: Waveform Track Controller monokrom ---------- */
+#testimoni .rv-media-audio.rv-audio-player {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    height: auto;
+}
+
+#testimoni .rv-audio-el {
+    display: none;
+}
+
+#testimoni .rv-audio-toggle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--rv-white);
+    color: #000;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+#testimoni .rv-audio-toggle:hover {
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+#testimoni .rv-audio-player.rv-audio-playing .rv-audio-toggle {
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.6);
+}
+
+#testimoni .rv-audio-waveform {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 26px;
+    cursor: pointer;
+}
+
+#testimoni .rv-audio-waveform span {
+    flex: 1;
+    min-width: 2px;
+    height: 30%;
+    background: var(--rv-white-dim);
+    border-radius: 2px;
+    transition: background 0.2s ease;
+}
+
+#testimoni .rv-audio-player.rv-audio-playing .rv-audio-waveform span {
+    background: rgba(255, 255, 255, 0.5);
+    animation: rv-audio-wave-pulse 1s ease-in-out infinite;
+}
+
+#testimoni .rv-audio-player.rv-audio-playing .rv-audio-waveform span:nth-child(odd) {
+    animation-delay: 0.15s;
+}
+
+@keyframes rv-audio-wave-pulse {
+    0%, 100% { transform: scaleY(0.85); }
+    50% { transform: scaleY(1.15); }
+}
+
+#testimoni .rv-audio-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04));
+    border-radius: 4px;
+    pointer-events: none;
+    transition: width 0.1s linear;
+}
+
+#testimoni .rv-audio-time {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    color: var(--rv-white-dim);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+    text-align: right;
+}
+
+/* Reactions row = mini "track fader" strip */
+#testimoni .rv-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--rv-border);
+}
+
+#testimoni .rv-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--rv-white-soft);
+    transition: var(--transition-fast);
+}
+
+#testimoni .rv-reaction-btn:hover {
+    border-color: var(--rv-border-strong);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+#testimoni .rv-reaction-btn.rv-reacted {
+    background: var(--rv-white);
+    color: #000;
+    border-color: var(--rv-white);
+}
+
+#testimoni .rv-reaction-count {
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+#testimoni .rv-actions {
+    display: flex;
+    gap: 10px;
+}
+
+#testimoni .rv-reply-toggle {
+    background: none;
+    border: none;
+    color: var(--rv-white-dim);
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+#testimoni .rv-reply-toggle:hover {
+    color: var(--rv-white);
+}
+
+#testimoni .rv-reply-form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+#testimoni .rv-reply-form-wrap.hidden { display: none; }
+
+#testimoni .rv-reply-name,
+#testimoni .rv-reply-text {
+    background: var(--rv-black);
+    border: 1px solid var(--rv-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--rv-white);
+    font-size: 0.82rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#testimoni .rv-reply-name:focus,
+#testimoni .rv-reply-text:focus {
+    border-color: var(--rv-white);
+    box-shadow: 0 0 10px var(--rv-glow);
+}
+
+#testimoni .rv-reply-submit {
+    align-self: flex-end;
+    padding: 6px 16px;
+    border-radius: 6px;
+    background: var(--rv-white);
+    color: #000;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+#testimoni .rv-reply-submit:hover {
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+#testimoni .rv-reply-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#testimoni .rv-replies {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 16px;
+    padding-left: 12px;
+    border-left: 2px solid var(--rv-border);
+}
+
+#testimoni .rv-reply-card {
+    background: var(--rv-black);
+    border: 1px solid var(--rv-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ---------- Load more ---------- */
+#testimoni .reviews-loadmore-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+#testimoni .rv-loadmore {
+    background: var(--rv-gray);
+    border: 1px solid var(--rv-border);
+    color: var(--rv-white);
+    padding: 10px 26px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+#testimoni .rv-loadmore:hover {
+    border-color: var(--rv-border-strong);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.2);
+}
+
+#testimoni .rv-loadmore.hidden { display: none; }
+
+/* ---------- Lightbox: modal popup neon silver ---------- */
+.rv-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.rv-lightbox.hidden { display: none; }
+
+.rv-lightbox.rv-lightbox-show {
+    opacity: 1;
+}
+
+.rv-lightbox-frame {
+    position: relative;
+    padding: 10px;
+    border-radius: 14px;
+    background: #0d0d10;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 0 2px rgba(255, 255, 255, 0.8),
+        0 0 24px rgba(255, 255, 255, 0.35),
+        0 0 60px rgba(255, 255, 255, 0.15);
+    transform: scale(0.94);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rv-lightbox-show .rv-lightbox-frame {
+    transform: scale(1);
+}
+
+.rv-lightbox-frame img {
+    display: block;
+    max-width: 88vw;
+    max-height: 82vh;
+    border-radius: 8px;
+}
+
+.rv-lightbox-close {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Toast ---------- */
+.rv-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #fff;
+    color: #000;
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.rv-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+    #testimoni .rv-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    #testimoni .reviews-list {
+        grid-template-columns: 1fr;
+    }
+
+    #testimoni .rv-submit-btn {
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    #testimoni .rv-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #testimoni .rv-form-msg {
+        margin-right: 0;
+        text-align: center;
+    }
+}
